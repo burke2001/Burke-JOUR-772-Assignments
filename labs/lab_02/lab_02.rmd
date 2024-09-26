@@ -92,6 +92,9 @@ maryland_expenses |>
   group_by(month) |>
   summarise(total_amount = sum(amount)) |>
   arrange(desc(total_amount))
+
+#You didn't sort by Wes Moore's committee! (Moore  Wes for Maryland)
+#Expenditure date issue: 18 rows in the table have the endings of addresses instead of dates (corrupted) -> will fail to parse these rows
 ```
 
 **A3: It looks like spending increased in 2022, compared to the previous year. The top four most expensive months were from 2022, and most of the months with the least amount of spending are from 2021. It also looks like the later months of the year tend to have higher expenditures than earlier months.**
