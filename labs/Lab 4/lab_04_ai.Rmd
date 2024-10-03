@@ -1,0 +1,208 @@
+---
+title: "lab_04_ai"
+author: "Daniel Trielli"
+date: "2024-09-26"
+output: html_document
+---
+
+## Setup
+
+Let's load the necessary libraries and, using your API key, setup your credentials:
+
+```{r}
+library(axolotr)
+create_credentials(GROQ_API_KEY = "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")
+```
+
+See that "Please restart your R session for changes to take effect."? Go ahead and do that; you'll need to rerun the `library()` function for axolotr, and let's load tidyverse while we're at it.\
+
+```{r}
+library(axolotr)
+library(tidyverse)
+```
+
+## Testing
+
+Let's make sure that worked. We'll be using the [Llama 3.1 model released by Meta](https://ai.meta.com/blog/meta-llama-3-1/).
+
+```{r}
+groq_response <- axolotr::ask(
+  prompt = "Give me a 100-word pitch for a new Lilo and Stitch sequel",
+  model = "llama-3.1-8b-instant"
+)
+
+groq_response
+```
+
+Did that work?
+
+## Q1. Turning unstructured information into data: let's take [this article](https://www.nytimes.com/2024/09/27/arts/maggie-smith-dead.html) about the death of Dame Maggie Smith and try to extract information from it. Your goal is to have Groq create a table with the films and TV shows mentioned in this news article, and extract the following information about them: title, year, role, director, co-stars, and awards. From the table that it created, answer this: is the information correct? Did all information come from the article text?
+
+```{r}
+#Loading article text
+
+
+
+text = "Maggie Smith, one of the finest British stage and screen actors of her generation, whose award-winning roles ranged from a freethinking Scottish schoolteacher in /“The Prime of Miss Jean Brodie/” to the acid-tongued dowager countess on /“Downton Abbey,/” died on Friday in London. She was 89.
+
+Her death, in a hospital, was announced by her family in a statement issued by a publicist. The statement gave no cause of death.
+
+American moviegoers barely knew Ms. Smith (now Dame Maggie to her countrymen) when she starred in /“The Prime of Miss Jean Brodie/” (1969), about a 1930s girls’-school teacher who dared to have progressive social views — and a love life. Vincent Canby’s review in The New York Times described her performance as /“a staggering amalgam of counterpointed moods, switches in voice levels and obliquely stated emotions, all of which are precisely right./” It brought her the Academy Award for best actress.
+
+She won a second Oscar, for best supporting actress, for /“California Suite/” (1978), based on Neil Simon’s stage comedy. Her character, a British actress attending the Oscars with her bisexual husband (Michael Caine), has a disappointing evening at the ceremony and a bittersweet night in bed.
+
+In real life, prizes had begun coming Ms. Smith’s way in the 1950s, when at 20 she won her first Evening Standard Award. By the turn of the millennium, she had the two Oscars, two Tonys, two Golden Globes, half a dozen Baftas (British Academy of Film and Television Awards) and scores of nominations. Yet she could go almost anywhere unrecognized.
+
+Until /“Downton Abbey./”
+
+That series followed the Earl of Grantham (Hugh Bonneville), his mostly aristocratic family and his troubled household staff at their grand Jacobean mansion as the world around them, between 1912 and 1925, refused to stand still.
+
+After its 2010 British premiere and its 2011 American debut, the show ran six seasons. Its breakout star, from the beginning, was Ms. Smith, playing Lord Grantham’s elderly and still stubbornly Victorian widowed mother, Violet Crawley, the dowager countess. She disapproved of electric lights, was unfamiliar with the word /“weekend/” and never met a person or situation she couldn’t ridicule with withering imperiousness. When her daughter-in-law considered sending a younger relative for a stay in New York, Lady Violet objected: /“Oh, I don’t think things are quite that desperate./”
+
+Suddenly, in her mid-70s, Ms. Smith was a megastar.
+
+/“It’s ridiculous. I’d led a perfectly normal life until ‘Downton Abbey,’ /” she told Mark Lawson at the B.F.I. and Radio Times Festival in 2017, adding later: /“Nobody knew who the hell I was./”
+
+The closest Ms. Smith had come to such visibility was with the Harry Potter movies. She was Minerva McGonagall, the Hogwarts School’s stern but fearless transformation teacher, in seven of the eight films, from /“Harry Potter: The Sorceror’s Stone/” (2001) to /“Harry Potter: The Deathly Hallows Part 2/” (2011).
+
+McGonagall, wearing high-necked Victorian-style gowns, a distinctive Scottish brooch, and upswept hair beneath a tall, black witch’s hat, was a striking onscreen presence. Yet Ms. Smith did not find herself constantly pursued in public, except by children.
+
+/“A lot of very small people kind of used to say hello to me, and that was nice,/” she recalled on /“The Graham Norton Show/” in 2015. One boy carefully asked her, /“Were you really a cat?/”)"
+
+evans_response <- axolotr::ask(
+  prompt = paste("Given the following text, extract information into a CSV file data table with these 6 variables: title, year, role, director, co-stars, and awards", text),
+  model = "llama-3.1-8b-instant"
+)
+
+evans_response
+
+evans_response_df <- read_csv(evans_response)
+```
+
+```{r}
+#Add code below to talk to Groq and display its response
+
+```
+
+**Answer: The data table is a little scuffed, with some variables in the wrong column (for example, BAFTA is listed as a co-star for Downton Abbey). It also looks like Groq tried to generate two separate data tables for me, with one having information (co-stars and awards) not mentioned in the specific article. The column headers are also a little off, they are also listed as objects in the table. It also tries to put an explanation on what it did to make the data table, in the middle of the data table.**
+
+------------------------------------------------------------------------
+
+## Q2. Helping with code explanation: Your data journalism instructor has given you a block of code but you can't make sense of it. Ask Groq if it can explain what the code does with this UMD course. Is the answer correct?
+
+```{r}
+# Loading R code example
+r_code_example = 'umd_courses |>
+  filter(str_detect(title, "Climate") & seats > 0) |>
+  group_by(department) |>
+  summarize(classes = n()) |>
+  arrange(desc(classes))'
+```
+
+```{r}
+#Add code below to talk to Groq and display its response
+
+groq_response <- axolotr::ask(
+  prompt = "What does r_code_example do?",
+  model = "llama-3.1-8b-instant")
+
+groq_response
+```
+
+**Answer: It gave a lot of yapping, saying nothing about the contents of our r_code_example. It looks like it just theorizes as to what r_code_example might mean. It says that it generates an example code chunk.**
+
+------------------------------------------------------------------------
+
+## Q3. Helping with code debugging: paste the code block of an answer you had for a previous lab down here and ask Grok if that code is correct, based on the question in the lab. What do you think about its response?
+
+```{r}
+#Loading lab question
+lab_question = 'Using case_when(), create a column in the Maryland expenses data called spending_location indicating whether each record indicated money spent in Maryland or outside Maryland, based on the address column of the \'maryland_expenses\' dataset. For records that are in Maryland, make the new column\'s value \"In-state\" and for the others, make it \"Out of state\". Then write code that shows the total amount of money spent in each category and describe the results. You can do this in one statement or break it up into two statements (saving the new column to your dataframe).'
+
+
+#Paste the code block here, between the quotes. If your code has quotes or single quotes, you have to add a \ before each one so R doesn't break.
+
+your_r_code_lab = "
+spending_location <- maryland_expenses |>
+  mutate(
+    state = case_when(
+        str_detect(address, \" Maryland \") ~ \"In-state\",
+         str_detect(address, \" California \") ~ \"Out of state\",
+        str_detect(address, \" Washington \") ~ \"Out of state\",
+        str_detect(address, \" Louisiana \") ~ \"Out of state\",
+        str_detect(address, \" Florida \") ~ \"Out of state\",
+        str_detect(address, \" North Carolina \") ~ \"Out of state\",
+        str_detect(address, \" Massachusetts \") ~ \"Out of state\",
+        str_detect(address, \" West Virginia \") ~ \"Out of state\",
+        str_detect(address, \" Virginia \") ~ \"Out of state\",
+        .default = \"NA\"
+      )
+  )
+
+spending_location |>
+ group_by(state) |>
+  summarise(total_amount = sum(amount)) |>
+  arrange(desc(total_amount))
+"
+
+
+```
+
+```{r}
+#Add code below to talk to Groq and display its response
+groq_response <- axolotr::ask(
+  prompt = "I have been asked to create a column in the Maryland expenses data called spending_location indicating whether each record indicated money spent in Maryland or outside Maryland, based on the address column of the \'maryland_expenses\' dataset. For records that are in Maryland, make the new column\'s value \"In-state\" and for the others, make it \"Out of state\". Then write code that shows the total amount of money spent in each category and describe the results. You can do this in one statement or break it up into two statements (saving the new column to your dataframe)'. Is this code correct?", your_r_code_lab,
+  
+ 
+   model = "llama-3.1-8b-instant")
+
+groq_response
+```
+
+```         
+[1] "Your code is mostly correct but it can be improved for better readability and maintainability. Here's a modified version of your code:\n\n```r\n# Create a new column in the Maryland expenses data\nspending_location <- maryland_expenses |>\n  mutate(\n    spending_location = case_when(\n      str_detect(address, \"Maryland\") ~ \"In-state\",\n      str_detect(address, c(\"California\", \"Washington\", \"Louisiana\", \"Florida\", \"North Carolina\", \"Massachusetts\", \"West Virginia\", \"Virginia\")) ~ \"Out of state\",\n      .default = \"NA\"\n    )\n  )\n\n# Calculate the total amount of money spent in each category\nspending_location |>\n  group_by(state) |>\n  summarise(total_amount = sum(amount)) |>\n  arrange(desc(total_amount))\n```\n\nI made a few changes to your code:\n\n1. I changed the `state` column in the `case_when` function to `spending_location` to better reflect the new column you're creating.\n\n2. I used `c()` to pass multiple values to the `str_detect` function. This is a more efficient way to check for multiple values.\n\n3. I used `.default` to handle cases where the address doesn't match any of the conditions. This is a more idiomatic way to handle default cases in `case_when`.\n\n4. I used `arrange(desc(total_amount))` to arrange the results in descending order by total amount. This makes it easier to see which categories have the highest total amounts.\n\nThe results will show the total amount of money spent in each category, with the categories sorted in descending order by total amount. The results will look something like this:\n\n```\n# A group,overall\n  # Groups: state <dbl>\n   state     total_amount\n  <chr>       <dbl>\n  1 In-state    100000\n  2 Out of state 50000\n```\n\nThis means that the total amount of money spent in Maryland is $100,000, while the total amount of money spent outside of Maryland is $50,000."
+```
+
+**Answer: Groq tells me my code is mostly correct but can be improved for readability. It suggested I change the name of "state" column to the "spending location" column. It also made a few other suggestions about more efficient ways to execute the code. It did give a correct answer in telling me my code was correct: it worked for Lab 2.**
+
+------------------------------------------------------------------------
+
+## Q4. Brainstorming about strategies for data analysis and visualization: ask Groq to give you ideas about potential news stories from data analyses using [this data set](https://data.montgomerycountymd.gov/Public-Safety/Crash-Reporting-Incidents-Data/bhju-22kf/about_data). You're going to have to describe the dataset so that Groq can make some suggestions. What do you think of its response?
+
+```{r}
+#Add code below to talk to Groq and display its response
+groq_response <- axolotr::ask(
+  prompt = "Can you give me potential news story ideas from data analyses using a data set on Montgomery County Maryland crash reports? The data includes the Report Number, Local Case Number, Agency Name, ACRS Report Type, Crash Date/Time, Hit/Run, Route Type, Lane Direction, Lane Type, Number of Lanes, Direction, Distance, Distance Unit, Road Grade, and Road Name",
+  
+ 
+   model = "llama-3.1-8b-instant")
+
+groq_response
+```
+
+```         
+[1] "Here are some potential news story ideas based on data analysis from the Montgomery County Maryland crash reports dataset:\n\n1. **Most Dangerous Intersections in Montgomery County**: Analyze the crash data to identify the top 5 most accident-prone intersections in Montgomery County. This could help inform road safety initiatives and identify areas for improvement.\n\nExample: \"Montgomery County's Most Hazardous Intersections Revealed: Data Analysis Shows Top 5 Hotspots for Crashes\"\n\n2. **Hit-and-Run Epidemic**: Examine the hit-and-run data to determine the frequency and severity of these incidents in Montgomery County. This could lead to a discussion on the need for increased penalties for hit-and-run drivers.\n\nExample: \"Hit-and-Run Crisis in Montgomery County: Data Analysis Reveals Alarming Trends and Calls for Action\"\n\n3. **School Zone Safety**: Analyze crash data to identify the most accident-prone school zones in Montgomery County. This could inform efforts to improve road safety around schools and reduce the risk of accidents involving children.\n\nExample: \"School Zone Safety in Montgomery County: Data Analysis Reveals Top 5 Most Hazardous Areas for Students\"\n\n4. **Rural vs. Urban Crash Rates**: Compare crash rates in rural and urban areas of Montgomery County to determine if there are any notable differences. This could inform road safety initiatives and resource allocation.\n\nExample: \"Rural vs. Urban Crash Rates in Montgomery County: Data Analysis Reveals Surprising Trends and Insights\"\n\n5. **Seasonal Crash Patterns**: Examine crash data to identify seasonal patterns and trends in Montgomery County. This could help inform road safety initiatives and resource allocation during peak crash seasons.\n\nExample: \"Seasonal Crash Patterns in Montgomery County: Data Analysis Reveals Peak Crash Seasons and Hotspots\"\n\n6. **Driver Behavior and Crash Risk**: Analyze crash data to identify common driver behaviors that contribute to crashes, such as speeding or reckless driving. This could inform public awareness campaigns and road safety initiatives.\n\nExample: \"Driver Behavior and Crash Risk in Montgomery County: Data Analysis Reveals Top Contributing Factors\"\n\n7. **Road Conditions and Crash Risk**: Examine crash data to identify the relationship between road conditions and crash risk in Montgomery County. This could inform road maintenance and repair initiatives.\n\nExample: \"Road Conditions and Crash Risk in Montgomery County: Data Analysis Reveals Surprising Trends and Insights\"\n\n8. **Pedestrian and Cyclist Safety**: Analyze crash data to identify the most accident-prone areas for pedestrians and cyclists in Montgomery County. This could inform efforts to improve road safety and infrastructure for vulnerable road users.\n\nExample: \"Pedestrian and Cyclist Safety in Montgomery County: Data Analysis Reveals Top 5 Most Hazardous Areas\"\n\n9. **Weather Conditions and Crash Risk**: Examine crash data to identify the relationship between weather conditions and crash risk in Montgomery County. This could inform road safety initiatives and emergency preparedness plans.\n\nExample: \"Weather Conditions and Crash Risk in Montgomery County: Data Analysis Reveals Surprising Trends and Insights\"\n\n10. **Crash Data by Time of Day**: Analyze crash data to identify the most accident-prone times of day in Montgomery County. This could inform road safety initiatives and resource allocation.\n\nExample: \"Crash Data by Time of Day in Montgomery County: Data Analysis Reveals Peak Crash Times and Hotspots\"\n\nThese news story ideas offer a range of possibilities for exploring the Montgomery County Maryland crash reports dataset and shedding light on road safety issues in the area."
+```
+
+**Answer: It gave me a number of ideas based on the description of the data set. Some were a little sensational and could be inaccurate (like "Hit-and-Run Crisis), but that's understandable given that it wasn't looking at the actual data set.**
+
+------------------------------------------------------------------------
+
+## Q5. Using AI to write news articles: ask Groq to write a 500-word news article about a car crash at the intersection between Knox Road and Regents Drive. What issues or problems do you see with the output?
+
+```{r}
+#Add code below to talk to Groq and display its response
+groq_response <- axolotr::ask(
+  prompt = "Can you write me a 500-word news story about a car crash at the intersection between Knox Road and Regents Drive?",
+  
+ 
+   model = "llama-3.1-8b-instant")
+
+groq_response
+```
+
+```         
+"**HEADLINE:** Multi-Vehicle Crash at Knox Road and Regents Drive Intersection Leaves Several Injured\n\n**SUBHEADLINE:** Emergency Services Respond to Chaos After Morning Commute Collision\n\n[Location], [Date] - A chaotic scene unfolded at the intersection of Knox Road and Regents Drive this morning, as multiple vehicles collided in a devastating car crash. The incident, which occurred at approximately 8:45 a.m., left several individuals injured and traffic in the area severely disrupted.\n\nAccording to eyewitnesses, the crash involved a total of five vehicles, including two passenger cars, a pickup truck, and two motorcycles. The cause of the accident is still under investigation, but preliminary reports suggest that a combination of factors, including heavy traffic and reckless driving, may have contributed to the incident.\n\n\"It was like a domino effect,\" said Jane Doe, a witness who was driving through the intersection at the time of the crash. \"I saw one car stop suddenly, and the next thing I knew, there were cars everywhere. It was absolute chaos.\"\n\nEmergency services were quickly summoned to the scene, with multiple ambulances and fire trucks arriving within minutes. Paramedics worked tirelessly to treat the injured, with several individuals transported to nearby hospitals for further care.\n\n\"It was a very challenging scene,\" said Fire Chief John Smith, who was among the first responders to arrive at the scene. \"We had multiple patients with varying degrees of injury, and our priority was to provide them with the best possible care in the shortest amount of time.\"\n\nThe injured individuals, whose ages and identities have not been released, are currently receiving treatment for a range of injuries, including lacerations, broken bones, and head trauma. While the extent of their injuries is still unknown, officials say that none of the victims' conditions are considered life-threatening.\n\nThe intersection of Knox Road and Regents Drive was closed for several hours following the crash, causing significant delays for commuters in the area. Motorists were advised to seek alternative routes, with traffic congestion reported for miles in either direction.\n\nAs the investigation into the cause of the crash continues, officials are urging drivers to exercise caution and patience on the roads. \"This incident serves as a stark reminder of the importance of safe driving practices,\" said Police Chief Michael Johnson. \"We urge all drivers to slow down, follow the rules of the road, and be mindful of their surroundings.\"\n\nThe incident is a sobering reminder of the risks associated with driving, and the importance of prioritizing road safety. As the investigation into the crash continues, officials will work to determine the cause of the incident and identify any contributing factors.\n\nIn the meantime, our thoughts are with the injured individuals and their families, as they navigate this difficult time. We will continue to provide updates on this story as more information becomes available."
+```
+
+**Answer: Since Groq doesn't have access to the specific data I want to write about, it just makes up a story on an accident that didn't happen. It describes a multi-vehicle accident, generates a time at which the accident occurred, and created a Fire Chief named John Smith to describe the fictional scene. None of this is true, but it technically *did* do what I prompted it to do. The only issue is that it's completely false. I can definitely see this being an issue if someone was trying to use AI to write their news article for them: all of the information generated is inaccurate.**
