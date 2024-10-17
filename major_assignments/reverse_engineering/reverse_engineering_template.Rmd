@@ -16,24 +16,29 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Introduction 
+## Introduction
 
-In this notebook, we are reverse engineering the story, [STORY NAME](STORY URL)
+In this notebook, we are reverse engineering the story, [STORY NAME](STORY%20URL)
 
 ## Load libraries
 
 Loading required libraries for this analysis.
 
 ```{r echo=FALSE, message=FALSE}
-
+library(tidyverse)
+library(janitor)
 ```
 
 ## Load and Cleaning Data
 
-In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data. 
+In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data.
 
 ```{r}
 # Load required data
+
+dc <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/reverse_engineering/data/dc-wikia-data.csv") |> clean_names()
+
+marvel <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/reverse_engineering/data/marvel-wikia-data.csv") |> clean_names()
 
 # Path to data should be loaded from folder "data" i.e. read_csv("data/name_of_data.csv")
 
@@ -43,24 +48,30 @@ In this section, describe the source of the data, write a basic data dictionary 
 ```
 
 ## Sentences to Engineer
+
 In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+-   **Sentence text**: Among the characters for which we have gender data, females made up only 29.3 percent of the DC character list and 24.7 percent of the Marvel roster. 
+-   **Analysis summary**: It looks like we found a slightly lower percentage of women for both DC and Marvel in our analysis. While these findings were close enough to the original findings (23.4% vs 24.7% for Marvel, and 28.5% vs. 29.3% for DC), the findings varied by about 1 percentage point. There were a number of cells in the sex category left blank: it is possible that the researches counted some of these as female in their analysis without updating the dataset, which contributed to the discrepancy between our analyses.
 
 ```{r}
 # Put code to reverse engineer sentence here
 
+dc |> group_by(sex) |> summarize(amount_women = n()) |> 
+  mutate(pct_women = (amount_women/6896)*100)
+
+marvel |> group_by(sex) |> summarize(amount_women = n()) |> 
+  mutate(pct_women = (amount_women/16376)*100)
 # Display results of code below this codeblock
 
 ```
 
 ### Sentence 2
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+-   **Sentence text**: [Paste in sentence to engineer here]
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -71,8 +82,8 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 3
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+-   **Sentence text**: [Paste in sentence to engineer here]
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -83,8 +94,8 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 4
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+-   **Sentence text**: [Paste in sentence to engineer here]
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -95,8 +106,8 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 5
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+-   **Sentence text**: [Paste in sentence to engineer here]
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
