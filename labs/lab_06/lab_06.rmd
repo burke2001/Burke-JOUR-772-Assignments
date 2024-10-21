@@ -30,7 +30,7 @@ This week we'll be combining and joining data to make it more useful and to ask 
 ```{r}
 # load and combine the call data from those three counties
 allegany_county <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/labs/lab_06/data/allegany_911.csv") |> clean_names()
-baltimore_county <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/labs/lab_06/data/baltimore_911.csv") |> clean_names() |> mutate(zip_code = as.character(zip_code))
+baltimore_city <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/labs/lab_06/data/baltimore_911.csv") |> clean_names() |> mutate(zip_code = as.character(zip_code))
 carroll_county <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/labs/lab_06/data/carroll_911.csv") |> clean_names()
 cecil_county <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/labs/lab_06/data/cecil_911.csv") |> clean_names() 
 ```
@@ -41,7 +41,7 @@ Then we'll join some demographic data with Baltimore City 911 calls and ask some
 # load and join the Baltimore-related data
 ZCTA <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/labs/lab_06/data/maryland_zcta.csv") |> clean_names() |> mutate(zcta5n = as.character(zcta5n))
 
-Baltimore_911_And_ZCTA <- baltimore_county |> left_join(ZCTA, join_by(zip_code == zcta5n)) 
+Baltimore_911_And_ZCTA <- baltimore_city |> left_join(ZCTA, join_by(zip_code == zcta5n)) 
 ```
 
 ## Answer questions
@@ -82,14 +82,45 @@ Add a column to your code that calculates the number of calls per 1,000 people f
 
 Which zip code has the highest rate of calls per 1,000 people? Find the neighborhoods in that zip code that are listed in the data - you can use group_by or distinct to do this. What are some of those neighborhoods?
 
-A3.
+**A3. (See \# note below) While I wasn't able to calculate a per-capita rate, the zip code with the highest amount of calls is 21217, with 774 calls. This zip code includes Penn North, Sandtown-Winchester, and Upton neighborhoods. In second place is 21223, with 525. This zip code includes Carrollton Ridge, Broadway East, and New Southwest/Mount Clare neighborhoods.**
 
 ```{r}
+
+Baltimore_911_And_ZCTA |> 
+  group_by(zip_code, neighborhood) |> 
+  summarize(zip_code_amount = n()) |>
+  arrange(desc(zip_code_amount)) 
+  #mutate(zip_code_amount = as.numeric(zip_code_amount)) |>
+  #mutate(population = as.numeric(population)) |>
+  mutate(calls_per_capita = (zip_code_amount/population)*1000)
+
+# I wasn't able to get this last line of code to work. I have tried mutating all the variables (zip_code and zip_code amount) to numeric but it still gives the error "non-numeric argument to binary operator." 
+
+#I am not sure why this would happen, given that zip_code_amount is an <int> and population is <num>, and according to Google <int> is a subsection of <num>. Not sure why it refused to treat one or the other as a number for my math problem. 
+
+#I tried to fix it by mutating every variable to <num>, but I got the error that for my population = as.numeric(population) function, 'list' object cannot be coerced to type 'double'. Google's solution of unlist did not help either. 
+
+#I was able to summarize zip code amount, but nothing beyond that. I tried all I could, but it wouldn't cooperate so here is what the rest of the code would theoretically look like if the last line worked:
+
+#mutate(seventyfive_pct_under_18 = (population/pop_18_over)*100) |>
+#arrange(desc(seventyfive_pct_under_18))
+
 ```
 
 ### Q4. Choose your own adventure: I want you to come up with a question you could ask of the Baltimore City data that combines both the calls and the demographic information. You must use both demographics and the overdose call data in your work.
 
-A4:
+**A4: Do older neighborhoods tend to call 911 more often than younger neighborhoods in Baltimore City?**
+
+**In looking at both tables, it appears as though neighborhoods with a higher population of residents under 18 call at a significantly higher rate than neighborhoods with a higher population of 65 and over. Neighborhoods with a larger percentage of minors rack up hundreds of calls, or even over a thousand in one case. Neighborhoods with a higher percent of seniors, however, tend to only rack up a couple dozen, if that. I also noticed that Baltimore City leans really young. The neighborhood with the highest population of minors has a majority at 81.5%, whereas the neigborhood with highest population of seniors in Baltimore has only 23.8% over 65.**
 
 ```{r}
+Baltimore_911_And_ZCTA |>
+  group_by(pct_pop_65) |>
+  summarize(call_amount = n()) |>
+  arrange(desc(pct_pop_65))
+
+Baltimore_911_And_ZCTA |>
+  group_by(pct_under_18) |>
+  summarize(call_amount = n()) |>
+  arrange(desc(pct_under_18))
 ```
