@@ -52,7 +52,7 @@ absentee_ballots_date <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/labs/la
 -   Good labels for the x & y axis and a caption for the source, which is the Maryland State Board of Elections
 -   Readable bars - the values shouldn't be overlapping
 
-**A1.**
+**A1. It looks like Worcester has the highest percentage or total absentee ballots returned.**
 
 ```{r}
 md_absentee_ballots <- md_absentee_ballots |> mutate(pct_returned = (total_received/total_sent) *100)
@@ -78,18 +78,67 @@ top10ballots |> ggplot() +
 -   Arrange the dataframe to show the counties with the smallest percentage of returned ballots from Democrats first.
 -   Use ggplot to make a horizontal bar chart that shows just the first 10 counties, with the length of the bar determined by the county's percentage of ballots returned by Democrats. Give it an appropriate title, source, and x and y axis titles.
 
-**A2.**
+**A2. It looks like for counties with a lower percentage or Democratic ballots returned, there is a higher percentage of Republican ballots returned. However, for counties with a lower percentage of *Republican* ballots returned, there is a much larger gap. For example, Garrett county has 39% of ballots returned were Democratic, and 48% were Republican. This is a much slimmer margin than Baltimore City, in which 87% of ballots returned were Democratic, and only 5% were Republican.**
 
 ```{r}
+md_absentee_ballots <- md_absentee_ballots |> mutate(pct_dem_returned = (dem_received/total_received)*100)
 
+top10dem <- md_absentee_ballots |> arrange(desc(pct_dem_returned)) |>
+head(10) 
+
+md_absentee_ballots <- md_absentee_ballots |> mutate(pct_rep_returned = (rep_received/total_received)*100)
+
+top10rep <- md_absentee_ballots |> arrange(desc(pct_rep_returned)) |>
+head(10) 
+
+md_absentee_ballots |> summarise(county_name, pct_dem_returned, pct_rep_returned) |> arrange(pct_dem_returned) |>
+head(10)
+
+md_absentee_ballots |> summarise(county_name, pct_rep_returned, pct_dem_returned) |> arrange(pct_rep_returned) |>
+head(10)
+
+top10dem |> ggplot() +
+  geom_bar(aes(x = reorder(county_name, pct_dem_returned), weight = pct_dem_returned)) + coord_flip() +
+  labs(
+    title="Top Ten Counties With Highest Percent Returned Dem Ballots",
+    x = "County",
+    y = "Percentage of Returned Ballots that are Democratic",
+    caption = "source: Maryland State Board of Elections"
+    
+  )
+
+top10rep |> ggplot() +
+  geom_bar(aes(x = reorder(county_name, pct_dem_returned), weight = pct_dem_returned)) + coord_flip() +
+  labs(
+    title="Top Ten Counties With Highest Percent Returned Rep Ballots",
+    x = "County",
+    y = "Percentage of Returned Ballots that are Republican",
+    caption = "source: Maryland State Board of Elections"
+    
+  )
 ```
 
 **Q3** Let's make a line chart using the second set of absentee ballot data - this one tracking returns by date. We want to see received ballots for Frederick County for Democrats, Republicans and Others, so you'll make a chart with three lines, adding color to each one (you can choose, but choose sensibly). Give the chart a title and good labels. What's the story that this line chart tells? Compare and contrast the three lines. Does it match what you know about absentee voting habits?
 
-**A3**
+**A3. For some reason, no line shows up on the plot, even though my code looks just fine. I managed to make the rest of the chart, just not the line itself. I kept getting the message (not an error, just a dataframe) saying "geom_line() : Each group consists of only one observation. Do you need to adjust the group aesthetic?" I tried adding a group variable under aes but it didn't pick up on most of the dates, so it's just a really broken line.**
 
 ```{r}
+frederick_ballots <- absentee_ballots_date |> filter(county_name == 'FREDERICK')
 
+frederick_ballots |> ggplot() + 
+  geom_line(aes(x=date, y=dem_received, group = dem_received, color = "Democrats")) +
+  geom_line(aes(x=date, y=rep_received, group = rep_received, color = "Republicans")) +
+  geom_line(aes(x=date, y=oth_received, group = oth_received, color = "Other")) +
+  theme(
+    axis.text.x = element_text(angle = 45,  hjust=1)
+  ) +
+  labs(
+    title="Frederick County Ballots Returned by Party",
+    x = "Date",
+    y = "Amount of Ballots Recieved",
+    caption = "source: Maryland State Board of Elections"
+    
+  )
 ```
 
 **Q4.** A scatterplot is a type of chart that helps us see relationships between two variables. One variable goes on the x axis, the other on the y axis. For each row/observation in our data, a scatterplot puts a circle (or a "point") where the two variables intersect on a grid.
@@ -110,9 +159,18 @@ Follow these steps:
 4.  Add a line of fit to the plot using geom_smooth (<https://ggplot2.tidyverse.org/reference/geom_smooth.html#ref-examples>). Specify the method as lm.
 5.  In the answer space below, describe what you see. In a general sense, how would you report out the main point(s) of this chart? Are there counties that seem to be over or under-performing in relation to the overall trend?
 
-**A4.**
+**A4. It looks like there's a general upward correlation between the amount of ballots sent and the amount of ballots returned. That means that generally, the more ballots a county is sent, the more ballots that county returns. The line of best fit hits on each county pretty on the nose, especially for the counties that were sent and received a smaller amount of ballots. The main outliers are Anne Arundel, Baltimore County, Baltimore City, and Montgomery. Anne Arundel and Baltimore County returned a higher amount of ballots than the statewide trend, whereas Baltimore City and Montgomery County seem to be underperforming in comparison to the trend line.**
 
 ```{r}
+md_absentee_ballots |> ggplot(aes(total_sent, total_received)) + geom_point() + 
 
+geom_text_repel(aes(label = county_name),  size=2) +
+  geom_smooth(method = lm) +
+  labs(
+    title="Ballots Sent vs Ballots Returned by County",
+    x = "Amount of Ballots Sent",
+    y = "Amount of Ballots Returned",
+    caption = "Source: Maryland State Board of Elections"
+  ) 
   
 ```
