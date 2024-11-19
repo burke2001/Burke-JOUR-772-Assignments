@@ -78,7 +78,11 @@ ggplot() +
 #Read data and calculate rate of outages per customer
 outages <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/labs/lab_10/data/county_outages_march2023.csv") |> mutate(outages_per_customer = outage_customers/total_customers)
 
-
+#Fixing
+#md_counties |> mutate(NAME = case_when(
+ # NAMELSAD == 'Baltimore city' ~ 'Baltimore City',
+#  .default = NAME
+#  ))
 ```
 
 ```{r}
