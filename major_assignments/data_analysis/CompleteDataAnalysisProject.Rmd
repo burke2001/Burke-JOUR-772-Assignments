@@ -1,0 +1,213 @@
+---
+title: "Data Analysis Project"
+author: "Mary Burke, Julian Ford, Liam Bowman, Xavier Board"
+date: "2024-11-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(janitor)
+```
+
+## Deliverable 4
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+electric_sales2023 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2023.csv") |> clean_names() |> mutate(year=2023) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2022 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2022.csv", skip=2) |> clean_names() |> mutate(year=2022) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2021 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2021.csv", skip=2) |> clean_names() |> mutate(year=2021) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2020 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2020.csv") |> clean_names() |> mutate(year=2020) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2019 <-read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2019.csv") |> clean_names() |> mutate(year=2019) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2018 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2018.csv") |> clean_names() |> mutate(year=2018) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2017 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2017.csv") |> clean_names() |> mutate(year=2017) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2016 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2016.csv") |> clean_names() |> mutate(year=2016) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2015 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2015.csv", skip=2) |> clean_names() |> mutate(year=2015) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2014 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2014.csv", skip=2) |> clean_names() |> mutate(year=2014) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2013 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2013.csv", skip=2) |> clean_names() |> mutate(year=2013) |> filter(!str_detect(entity, "Adjustment"))
+
+electric_sales2012 <- read.csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/retail_power_marketers2012.csv", skip=2) |> clean_names() |> mutate(year=2012) |> filter(!str_detect(entity, "Adjustment"))
+```
+
+The data shows Electric Company Sales from 2013-2023. There are 7 variables in total for each (which required a lot of tweaking from Tabula). Each dataset has around 600 rows. The data set may not be able to answer directly for outside influences on the variables, but can help show trends over time. Some of the questions we posed require some outside research on the energy industry, but this data can back up some of the theories we have on what is driving energy prices and why.
+
+The 7 columns are:
+
+-   Entity (name of company)
+
+-   State (which state the company is based in)
+
+-   Ownership (is it a private or public company?)
+
+-   Customer count (amount of customers served)
+
+-   Sales per megawatt hours
+
+-   Revenues (listed in thousands)
+
+-   Average price (in cents per kilowatt)
+
+**Question 1: Have energy prices from private companies gone up in recent years? (Mary)**
+
+This code joins all datasets into one. Average_price_cents_k_wh was chr in some data sets, while num in another, which needed to be cleaned up and standardized before merging.
+
+```{r}
+
+electric_sales2012 <- electric_sales2012 |> mutate(average_price_cents_k_wh = as.numeric(parse_number(average_price_cents_k_wh)))
+
+electric_sales2013 <- electric_sales2013 |> mutate(average_price_cents_k_wh = as.numeric(parse_number(average_price_cents_k_wh)))
+
+electric_sales2022 <- electric_sales2022 |> mutate(average_price_cents_k_wh = as.numeric(parse_number(average_price_cents_k_wh)))
+
+electric_sales2023 <- electric_sales2023 |> mutate(average_price_cents_k_wh = as.numeric(parse_number(average_price_cents_k_wh)))
+```
+
+```{r}
+all_years <- electric_sales2023 |> full_join(electric_sales2022) |> full_join(electric_sales2021) |> full_join(electric_sales2020) |> full_join(electric_sales2019) |> full_join(electric_sales2018) |> full_join(electric_sales2017) |> full_join(electric_sales2016) |> full_join(electric_sales2015) |> full_join(electric_sales2014) |> full_join(electric_sales2013) |> full_join(electric_sales2012)
+```
+
+```{r}
+md_dc_all_years <- all_years |> filter(state == "MD" | state == "DC")
+```
+
+**Here is a summary of the average price of energy for each year. The only issue is 2013, 2015, 2022, and 2023 show up as NA.** **That's about half our data set. We managed to exclude the NAs in the data analysis, which was preventing those years from being analyzed.**
+
+```{r}
+md_dc_all_years |> group_by(year) |> summarize(mean_prices = mean(average_price_cents_k_wh, na.rm = TRUE))
+```
+
+**Here is a visual representation of these changes in a bar chart.**
+
+```{r}
+md_dc_all_years |> group_by(year) |> summarize(mean_prices = mean(average_price_cents_k_wh, na.rm = TRUE)) |>
+  ggplot() +
+  geom_bar(aes(x=year, weight=mean_prices)) +
+  labs(
+    title="Average Prices of MD and DC Energy 2012-2023",
+    x = "Year",
+    y = "Average Energy Prices"
+  )
+```
+
+**Answer: It looks like average energy prices in MD and DC increased since 2012, rising from 8.81 cents per kilowatt hour, to 14.3 cents. However, these numbers do not account for potential inflation since 2012. I would have to join a database of inflation to truly check accurate rise in prices. Also, it is unclear if this rise in prices is exclusive to Maryland/DC or if this is a trend in the national energy industry in all states.**
+
+**Question 2: Did DC’s implementation of Purchase of Receivables in 2014 have an impact on the market? (Liam)**
+
+```{r}
+md_dc_all_years <- md_dc_all_years |> mutate(revenues_thousands_dollars = as.numeric(parse_number(revenues_thousands_dollars)))
+```
+
+```{r}
+md_dc_all_years |> filter(state == "DC" & !str_detect(entity, "Adjustment")) |> group_by(year) |> summarize(mean_prices = mean(average_price_cents_k_wh, na.rm = TRUE)) |>
+  ggplot() +
+  geom_bar(aes(x=year, weight=mean_prices)) +
+  labs(
+    title="Average Prices of DC Energy 2012-2023",
+    x = "Year",
+    y = "Average Energy Prices"
+  )
+
+md_dc_all_years |> filter(state == "DC" & !str_detect(entity, "Adjustment")) |> group_by(year) |> summarize(mean_revenue = mean(revenues_thousands_dollars, na.rm = TRUE)) |>
+  ggplot() +
+  geom_bar(aes(x=year, weight=mean_revenue)) +
+  labs(
+    title="Average Revenues of DC Energy Companies 2012-2023",
+    x = "Year",
+    y = "Average Revenues (Thousands)"
+  )
+
+md_dc_all_years |> filter(state == "DC" & !str_detect(entity, "Adjustment")) |> group_by(year) |> 
+  summarize(
+  count_entity =n()
+  ) |>
+  ggplot() +
+  geom_bar(aes(x=year, weight=count_entity)) +
+  labs(
+    title="Number of DC Energy Companies 2012-2023",
+    x = "Year",
+    y = "Amount of Companies Serving DC"
+  )
+```
+
+**Answer: It looks like, since 2014, DC's energy market has faced significant changes. Energy prices seem to have increased since the 2014 Purchase of Receivables Policy. However, average revenues for energy companies seem to have decreased. Lastly, the number of energy companies has grown significantly since the 2014 policy was implemented.**
+
+**Question 3: Which state has the most retail power suppliers? Which has the most per Capita? (Julian)**
+
+```{r}
+
+```
+
+**Question 4: Which state has the highest average price in 2023? (Mary or Liam)**
+
+```{r}
+all_years |> group_by(state) |> filter(year == 2023) |> summarize(mean_prices = mean(average_price_cents_k_wh, na.rm = TRUE)) |> arrange(desc(mean_prices))
+
+all_years |> group_by(state) |> filter(year == 2023) |> summarize(mean_prices = mean(average_price_cents_k_wh, na.rm = TRUE)) |> arrange(mean_prices)
+```
+
+**Answer: It looks like Massachusetts has the highest average energy price in the data set in 2023, at 21.64 cents per kilowatt hour. Ohio, on the other hand, has an average price of 11.99 cents per kilowatt hour, the lowest in the data set. This could be because of influencing factors not present in the database, such as proximity to sources of energy (importing costs would affect overall price of energy in a state) or energy policy in that state (govt. could subsidize energy companies or incentivize cleaner energy instead).**
+
+**Question 5: Looking at the last five years, do third-party energy suppliers in Washington, D.C. charge, on average, a higher price than the "standard offer of service" – the publicly regulated price offered by Pepco? (Liam)**
+
+```{r}
+#1.Create a new data set showing TPSs in D.C. from 2019 to 2023. 
+dc_retail <- bind_rows(list(electric_sales2019, electric_sales2020, electric_sales2021, electric_sales2022, electric_sales2023)) 
+
+dc_retail <- dc_retail|> filter(str_detect(state, "DC") & !str_detect (entity, "Adjustment"))
+```
+
+```{r}
+#2. Load, clean and bind data from Pepco, D.C.'s publicly regulated utility, for the same five-year period. 
+pepco_2023 <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/Pepco_2023.csv", col_names = FALSE) |> clean_names() |> rename(entity = x1, state = x2, ownership = x3, customers_count = x4, sales_megawatthours = x5, revenue_thousands_dollars = x6, average_price_cents_k_wh = x7) |> mutate (year=2023)
+
+pepco_2022 <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/Pepco_2022.csv", col_names = FALSE, skip = 1) |> clean_names() |> rename(entity = x1, state = x2, ownership = x3, customers_count = x4, sales_megawatthours = x5, revenue_thousands_dollars = x6, average_price_cents_k_wh = x7) |> mutate (year=2022)
+
+pepco_2021 <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/Pepco_2021.csv", col_names = FALSE, skip = 1) |> clean_names() |> rename(entity = x1, state = x2, ownership = x3, customers_count = x4, sales_megawatthours = x5, revenue_thousands_dollars = x6, average_price_cents_k_wh = x7) |> mutate (year=2021)
+
+pepco_2020 <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/Pepco_2020.csv", col_names = FALSE, skip = 1)|> clean_names() |> rename(entity = x1, state = x2, ownership = x3, customers_count = x4, sales_megawatthours = x5, revenue_thousands_dollars = x6, average_price_cents_k_wh = x7) |> mutate (year=2020)
+
+pepco_2019 <- read_csv("~/JOUR 772/Burke-JOUR-772-Assignments/major_assignments/data_analysis/Pepco_2019.csv", col_names = FALSE, skip = 1)|> clean_names() |> rename(entity = x1, state = x2, ownership = x3, customers_count = x4, sales_megawatthours = x5, revenue_thousands_dollars = x6, average_price_cents_k_wh = x7) |> mutate (year=2019)
+
+pepco_combined <- bind_rows(list(pepco_2019, pepco_2020, pepco_2021, pepco_2022, pepco_2023))
+```
+
+```{r}
+#3. Create a new dataframe showing the average price of D.C. third-party energy suppliers for each of the last five years.
+
+#dc_retail <- dc_retail |> mutate(customers_count = as.numeric(parse_number(customers_count)))
+
+dc_tps_avg <- dc_retail |> group_by (year) |> summarise(tps_count = n(), tps_customers = sum(customers_count),tps_avg_price = mean(average_price_cents_k_wh))
+
+dc_tps_avg <- dc_tps_avg |> mutate(year = as.character(year))
+```
+
+```{r}
+#4. Do the same for Pepco.
+
+pepco_avg <- pepco_combined |> group_by (year) |> summarise(avg_public_price = sum(average_price_cents_k_wh) ) |> mutate(year = as.character(year))
+```
+
+```{r}
+#5. Join the two. 
+
+dc_price_comp <- dc_tps_avg |> inner_join(pepco_avg, join_by(year))
+```
+
+**Answer:** **The results here were interesting. For the first three years we were looking at – 2019, 2020, 2021 – the price averages were roughly even, hovering around the 11 to 12 cents-per-kilowatt hour range. In fact, in 2020, our analysis showed the average private price was ever so slightly lower than the regulated price. However, the average private price shot up in 2022, and the gap between the two averages widened. In 2022, the average private price was 14.5 cents, compared with a 12.6 cent regulated price. In 2023, the average private price was 17 cents, while the regulated price was about 15 cents. For the two most recent years covered by the data, third-party energy suppliers were, on average, more expensive than the regulated alternative.**
